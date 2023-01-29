@@ -120,7 +120,7 @@ export async function getUser(req, res) {
       if (err) return res.status(500).send({ err });
       if (!user)
         return res.status(501).send({ error: "Couldn't find the user" });
-      const { password, ...rest } = Object.assign({},user.toJSON());
+      const { password, ...rest } = Object.assign({}, user.toJSON());
       return res.status(201).send(rest);
     });
   } catch (error) {
@@ -129,7 +129,20 @@ export async function getUser(req, res) {
 }
 
 export async function updateUser(req, res) {
-  res.json("updateUser route");
+  try {
+    const id = req.query.id;
+    if (id) {
+      const body = req.body;
+      UserModel.updateOne({ _id: id }, body, function (err, data) {
+        if (err) throw err;
+        return res.status(201).send({ msg: "record updated" });
+      });
+    } else {
+      return res.status(401).send({ error: "user not found" });
+    }
+  } catch (error) {
+    return res.status(401).send({ error });
+  }
 }
 
 export async function generateOTP(req, res) {
