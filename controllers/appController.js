@@ -8,9 +8,9 @@ export async function verifyUser(req, res, next) {
     const { username } = req.method == "GET" ? req.query : req.body;
 
     let exist = await UserModel.findOne({ username });
-    if (!exist) {
-      return res.status(404).send({ error: "can't find userF" });
-    }
+    if (!exist) return res.status(404).send({ error: "can't find user" });
+
+    next();
   } catch (error) {
     return res.status(404).send({ error: "Authentication error" });
   }
@@ -130,10 +130,10 @@ export async function getUser(req, res) {
 
 export async function updateUser(req, res) {
   try {
-    const id = req.query.id;
-    if (id) {
+    const { userId } = req.user;
+    if (userId) {
       const body = req.body;
-      UserModel.updateOne({ _id: id }, body, function (err, data) {
+      UserModel.updateOne({ _id: userId }, body, function (err, data) {
         if (err) throw err;
         return res.status(201).send({ msg: "record updated" });
       });
@@ -141,7 +141,8 @@ export async function updateUser(req, res) {
       return res.status(401).send({ error: "user not found" });
     }
   } catch (error) {
-    return res.status(401).send({ error });
+    console.log("----------------",error);
+    return res.status(401).send({error});
   }
 }
 
