@@ -167,9 +167,48 @@ export async function verifyOTP(req, res) {
 }
 
 export async function createResetSession(req, res) {
-  res.json("createResetSession route");
+  if (req.app.locals.resetSession) {
+    req.app.locals.resetSession = false;
+    return res.status(201).send({ msg: "Access grated" });
+  }
+  return res.status(400).send({ error: "Session expired" });
 }
 
 export async function resetPassword(req, res) {
-  res.json("resetPassword route");
+  try {
+    if (!req.app.locals.resetSession) {
+      return res.status(400).send({ error: "Session expired" });
+    }
+    const { username, password } = req.body;
+    try {
+      UserModel.findOne({ username })
+        .then((user) => {
+          bcrypt
+            .hash(password, 10)
+            .then((hasheddPassword) => {
+              UserModel.updateOne(
+                { username: user.username },
+                { password: hasheddPassword },
+                function (err, data) {
+                  if (err) {
+                    throw err;
+                  }
+                  req.app.locals.resetSession = false;
+                  return res.status(201).send({ msg: "Record updated" });
+                }
+              );
+            })
+            .catch((error) => {
+              return res.status(404).send({ error: "Unable to hash password" });
+            });
+        })
+        .catch((error) => {
+          return res.status(404).send({ error: "Username not found" });
+        });
+    } catch (error) {
+      return res.status(500).send({ error });
+    }
+  } catch (error) {
+    return res.status(401).send({ error });
+  }
 }
