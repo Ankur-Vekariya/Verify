@@ -5,13 +5,14 @@ const router = Router();
 // import all controllers
 import * as controller from "../controllers/appController.js";
 import Auth, { localVariable } from "../middleware/auth.js";
+import { registerMail } from "../controllers/mailer.js";
 
 export default router;
 
 // POST methods
 
 router.route("/register").post(controller.register);
-// router.route("/registerMail").post(controller.);
+router.route("/registerMail").post(registerMail);
 router.route("/authenticate").post((req, res) => res.end());
 router.route("/login").post(controller.verifyUser, controller.login);
 
